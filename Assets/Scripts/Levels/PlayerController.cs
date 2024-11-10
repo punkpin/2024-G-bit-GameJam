@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("储存类")]
+    [Header("Detect Layer")]
     [SerializeField] public LayerMask detectLayer;
-    [Header("数据类")]
+    [Header("Speed")]
     [SerializeField] public int speed = 1;
     private Vector2 moveDir;
     // Start is called before the first frame update

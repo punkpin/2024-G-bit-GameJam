@@ -2093,7 +2093,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   detectLayer:
     serializedVersion: 2
-    m_Bits: 768
+    m_Bits: 0
   speed: 1
 --- !u!1 &1677639158
 GameObject:
