@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Animations;
+using UnityEditor.Rendering;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -10,18 +12,21 @@ public class PlayerController : MonoBehaviour
 
 	private bool isAttach;
 
-	[Header ( "Value" )]
-	public const float gridHalfSize = 0.25f;
+	[Header("Value")]
+	[SerializeField] public float Move_cushioning;
+    public const float gridHalfSize = 0.25f;
 
 	[Header ( "LayerMask" )]
 	public LayerMask boxLayer;
 	public LayerMask obstacleLayer;
 
+
 	public void Start ( )
 	{
 		currentPosition = RoundToGridCenter ( transform.position );
-		initialBox = Physics2D.OverlapPoint ( currentPosition , boxLayer ); 
-	}
+		initialBox = Physics2D.OverlapPoint ( currentPosition , boxLayer );
+
+    }
 
 	public void Update ( )
 	{
@@ -45,15 +50,17 @@ public class PlayerController : MonoBehaviour
 		}
 		else
 		{
-			if ( Input.GetKeyDown ( KeyCode.W ) || Input.GetKeyDown ( KeyCode.UpArrow ) ) 
-				MoveToNearestBox ( Vector2.up );
-			else if ( Input.GetKeyDown ( KeyCode.A ) || Input.GetKeyDown ( KeyCode.LeftArrow ) ) 
-				MoveToNearestBox ( Vector2.left );
-			else if ( Input.GetKeyDown ( KeyCode.S ) || Input.GetKeyDown ( KeyCode.DownArrow ) ) 
-				MoveToNearestBox ( Vector2.down );
-			else if ( Input.GetKeyDown ( KeyCode.D ) || Input.GetKeyDown ( KeyCode.RightArrow ) ) 
-				MoveToNearestBox ( Vector2.right );
-		}
+			if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+				MoveToNearestBox(Vector2.up);
+            else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+				MoveToNearestBox(Vector2.left);
+			else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+				MoveToNearestBox(Vector2.down);
+			else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+                MoveToNearestBox ( Vector2.right );
+                
+
+        }
 	}
 
 	private void MoveTogether ( Vector2 direction )
@@ -142,7 +149,7 @@ public class PlayerController : MonoBehaviour
 		Vector2 boxCenter = RoundToGridCenter ( transform.position ); // position of player current box
 		Vector2 rayStartPosition = RoundToGridCenter(transform.position) + direction * 0.5f;
 
-		while ( rayLength <= maxRayLength )
+		while ( rayLength <= maxRayLength)
 		{
 			// raycast judgement by adding the edge length of box
 			Debug.Log ( rayLength );
@@ -151,7 +158,9 @@ public class PlayerController : MonoBehaviour
 			RaycastHit2D hit = Physics2D.Raycast ( rayStartPosition , direction , rayLength , boxLayer );
 			RaycastHit2D obstacleHit = Physics2D.Raycast ( rayStartPosition , direction , rayLength , obstacleLayer );
 
-			if ( hit.collider != null )
+			
+
+            if ( hit.collider != null )
 			{
 				closestBox = hit.collider;
 				Debug.Log ( closestBox.transform.position );
@@ -164,13 +173,16 @@ public class PlayerController : MonoBehaviour
 				obstaclePosition = RoundToGridCenter ( obstacleHit.point - direction * 0.5f );
 				break;
 			}
+            
+            rayLength += rayIncrement;
 
-			rayLength += rayIncrement;
 		}
 
 		if ( closestBox != null )
 		{
-			MoveToBox ( closestBox );
+            StartCoroutine(Move_Wait(direction, closestBox));
+
+           
 		}
 		else if ( obstaclePosition.HasValue )
 		{
@@ -208,5 +220,21 @@ public class PlayerController : MonoBehaviour
 		    Mathf.Round ( position.y / 0.5f ) * 0.5f
 		);
 	}
+    private IEnumerator Move_Wait(Vector3 direction, Collider2D closestBox)
+	{
+		while (true)
+		{
+
+			this.transform.position += direction*0.01f;
+
+            yield return new WaitForSeconds(0.01f);
+			float Ray = (closestBox.transform.position -this.transform.position).magnitude;
+            if (Ray <= 0.01f)
+			{
+                MoveToBox ( closestBox );
+                break;
+			}
+        }
+    }
 }
 
