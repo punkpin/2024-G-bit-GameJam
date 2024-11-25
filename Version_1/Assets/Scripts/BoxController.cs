@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,18 +6,37 @@ public class BoxController : MonoBehaviour
 {
 	[Header ( "LayerMask" )]
 	public LayerMask obstacleLayer; 
-	public LayerMask boxLayer; 
+	public LayerMask boxLayer;
+	private Stack<BoxState> stateStack = new Stack<BoxState>();//实现栈的功能
+	[Header("Script")]
+	private PlayerController playerController;
 
-	public bool TryMove ( Vector2 direction )
+	private bool IsLocked_Player;
+
+    private void Start()
+    {
+        playerController = GameObject.Find("Character").GetComponent<PlayerController>();
+    }
+
+    private void Update()
+    {
+		IsLocked_Player = playerController.isLockState;//状态统一
+
+        if (!IsLocked_Player &&Input.GetKeyDown(KeyCode.Z))
+		{
+			StartRewind();
+        }
+    }
+    public bool TryMove ( Vector2 direction )
 	{
 		// Find obstacle on the direction
 		Vector2 targetPosition = ( Vector2 ) transform.position + direction;
-
-		// Raycast judgemnet to find ovelap box
-		if ( IsValidMove ( targetPosition ) )
+        // Raycast judgemnet to find ovelap box
+        if ( IsValidMove ( targetPosition ) )
 		{
-			// move box to target
-			transform.position = targetPosition;
+            // move box to target
+            SaveState();
+            transform.position = targetPosition;
 			return true;
 		}
 		else
@@ -40,4 +59,28 @@ public class BoxController : MonoBehaviour
 
 		return false; 
 	}
+    public void SaveState()
+    {
+        // 保存当前状态到栈
+        stateStack.Push(new BoxState(transform.position));
+    }
+
+    public void StartRewind()
+    {
+        if (stateStack.Count > 0)
+        {
+            BoxState lastState = stateStack.Pop();
+            transform.position = lastState.position;
+        }
+    }
+
+}
+public class BoxState
+{
+    public Vector2 position;
+
+    public BoxState(Vector2 pos)
+    {
+        position = pos;
+    }
 }

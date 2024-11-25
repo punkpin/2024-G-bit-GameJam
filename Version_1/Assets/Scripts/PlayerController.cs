@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Animations;
 using UnityEditor.Rendering;
@@ -9,10 +9,11 @@ public class PlayerController : MonoBehaviour
 	private Vector2 currentPosition; // dynamic variable to record position
 	private Collider2D initialBox; 
 	private Collider2D boxHit;
+    private Stack<PlayerState> stateStack = new Stack<PlayerState>();
+    private bool isAttach;
+	public  bool isLockState = false;
 
-	private bool isAttach;
-
-	[Header("Value")]
+    [Header("Value")]
 	[SerializeField] public float Move_cushioning;
     public const float gridHalfSize = 0.25f;
 
@@ -39,27 +40,32 @@ public class PlayerController : MonoBehaviour
 	{
 		if ( isAttach )
 		{
-			if ( Input.GetKeyDown ( KeyCode.W ) || Input.GetKeyDown ( KeyCode.UpArrow ) )
+			if ( (Input.GetKeyDown ( KeyCode.W ) || Input.GetKeyDown ( KeyCode.UpArrow ))&& !isLockState)
 				MoveTogether ( Vector2.up );
-			else if ( Input.GetKeyDown ( KeyCode.A ) || Input.GetKeyDown ( KeyCode.LeftArrow ) )
+			else if (( Input.GetKeyDown ( KeyCode.A ) || Input.GetKeyDown ( KeyCode.LeftArrow ))&&!isLockState )
 				MoveTogether ( Vector2.left );
-			else if ( Input.GetKeyDown ( KeyCode.S ) || Input.GetKeyDown ( KeyCode.DownArrow ) )
+			else if ( (Input.GetKeyDown ( KeyCode.S ) || Input.GetKeyDown ( KeyCode.DownArrow ))&&!isLockState )
 				MoveTogether ( Vector2.down );
-			else if ( Input.GetKeyDown ( KeyCode.D ) || Input.GetKeyDown ( KeyCode.RightArrow ) )
+			else if ( (Input.GetKeyDown ( KeyCode.D ) || Input.GetKeyDown ( KeyCode.RightArrow ))&&!isLockState )
 				MoveTogether ( Vector2.right );
 		}
 		else
 		{
-			if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+			if ((Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))&&!isLockState)
 				MoveToNearestBox(Vector2.up);
-            else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+            else if ((Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))&&!isLockState)
 				MoveToNearestBox(Vector2.left);
-			else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+			else if ((Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))&& !isLockState)
 				MoveToNearestBox(Vector2.down);
-			else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+			else if ((Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)) && !isLockState)
                 MoveToNearestBox ( Vector2.right );
                 
 
+        }
+
+		if (Input.GetKeyDown(KeyCode.Z)&& !isLockState)
+		{
+            StartRewind();
         }
 	}
 
@@ -68,8 +74,12 @@ public class PlayerController : MonoBehaviour
 		Vector2 targetPosition = RoundToGridCenter ( ( Vector2 ) transform.position + direction * gridHalfSize * 4 );
 		if ( CanMove ( direction, targetPosition ) )
 		{
-			transform.position = targetPosition;
-			initialBox.transform.position = targetPosition;
+			SaveState();//储存自身位置
+            transform.position = targetPosition;
+
+			BoxController boxController = initialBox.GetComponent<BoxController>();
+            boxController.SaveState();//储存同行盒子状态
+            initialBox.transform.position = targetPosition;
 
 			Debug.Log ( $"Moved together to {targetPosition}" );
 		}
@@ -180,6 +190,7 @@ public class PlayerController : MonoBehaviour
 
 		if ( closestBox != null )
 		{
+			isLockState = true;
             StartCoroutine(Move_Wait(direction, closestBox));
 
            
@@ -192,7 +203,8 @@ public class PlayerController : MonoBehaviour
 
 	private void MoveToBox ( Collider2D box )
 	{
-		currentPosition = RoundToGridCenter ( box.transform.position );
+        isLockState = false;
+        currentPosition = RoundToGridCenter ( box.transform.position );
 		transform.position = currentPosition;
 		initialBox = box; // reset initialbox
 		Debug.Log ( $"Moved to box at {currentPosition}" );
@@ -222,7 +234,8 @@ public class PlayerController : MonoBehaviour
 	}
     private IEnumerator Move_Wait(Vector3 direction, Collider2D closestBox)
 	{
-		while (true)
+        SaveState(); 
+        while (true)
 		{
 
 			this.transform.position += direction*0.01f;
@@ -235,6 +248,31 @@ public class PlayerController : MonoBehaviour
                 break;
 			}
         }
+    }
+    void SaveState()
+    {
+        // 保存当前状态到栈
+        stateStack.Push(new PlayerState(transform.position));
+    }
+
+    void StartRewind()
+    {
+        if (stateStack.Count > 0)
+        {
+            PlayerState lastState = stateStack.Pop();
+            transform.position = lastState.position;
+        }
+    }
+
+}
+[System.Serializable]
+public class PlayerState
+{
+    public Vector2 position;
+
+    public PlayerState(Vector2 pos)
+    {
+        position = pos;
     }
 }
 
