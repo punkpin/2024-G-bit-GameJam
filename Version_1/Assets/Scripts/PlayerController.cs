@@ -7,7 +7,8 @@ public class PlayerController : MonoBehaviour
 	private Vector2 currentPosition;
 	private Collider2D initialBox;
 	private Stack<PlayerState> stateStack = new Stack<PlayerState> ( );
-	private bool isAttach;
+    private PlayerState initialState; // 保存初始状态
+    private bool isAttach;
 	private List<BoxController> allBoxes = new List<BoxController> ( );
 
 	[Header ( "Value" )]
@@ -20,7 +21,8 @@ public class PlayerController : MonoBehaviour
 
 	public void Start ( )
 	{
-		currentPosition = RoundToGridCenter ( transform.position );
+        initialState = new PlayerState(transform.position);//储存玩家初始位置
+        currentPosition = RoundToGridCenter ( transform.position );
 		initialBox = Physics2D.OverlapPoint ( currentPosition , boxLayer );
 
 		// 初始化所有箱子
@@ -43,6 +45,14 @@ public class PlayerController : MonoBehaviour
 		{
 			StartRewind ( );
 		}
+		if(Input.GetKeyDown(KeyCode.R))
+		{
+			RestoreFirstState();
+            foreach (BoxController boxes in allBoxes)
+            {
+				boxes.RestoreFirstState();
+            }
+        }	
 	}
 
 	// 移动处理
@@ -200,6 +210,25 @@ public class PlayerController : MonoBehaviour
 		    Mathf.Round ( position.y / 0.5f ) * 0.5f
 		);
 	}
+
+    //遇到了未知的问题，导致无法直接回到栈的第一步，改用创建一个 PlayerState来保存
+    //void RestoreFirstState()
+    //{
+    //    if (stateStack.Count > 0)
+    //    {
+    //        PlayerState firstState = stateStack.Peek(); // 查看最早保存的状态
+    //        stateStack.Clear(); // 清空所有状态，避免重复
+    //        transform.position = firstState.position;
+    //    }
+    //}
+    void RestoreFirstState()
+	{
+        if (initialState != null)
+        {
+			transform.position = initialState.position;
+        }
+
+    }
 }
 
 [System.Serializable]

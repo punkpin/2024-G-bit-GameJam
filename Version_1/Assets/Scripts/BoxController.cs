@@ -5,8 +5,13 @@ using UnityEngine;
 public class BoxController : MonoBehaviour
 {
 	private Stack<BoxState> stateStack = new Stack<BoxState> ( );
+    private BoxState initialState; // 保存初始状态
 
-	public void SaveState ( )
+    private void Start()
+    {
+        initialState = new BoxState(transform.position);//储存箱子初始位置
+    }
+    public void SaveState ( )
 	{
 		stateStack.Push ( new BoxState ( transform.position ) );
 	}
@@ -19,6 +24,15 @@ public class BoxController : MonoBehaviour
 			transform.position = lastState.position;
 		}
 	}
+
+    public void RestoreFirstState()
+	{
+        if (initialState != null)
+        {
+            transform.position = initialState.position;
+        }
+
+    }
 }
 
 public class BoxState
