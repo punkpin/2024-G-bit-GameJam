@@ -1,16 +1,17 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-	private Vector2 currentPosition; // dynamic variable to record position
-	private Collider2D initialBox; 
-	private Collider2D boxHit;
-
+	private Vector2 currentPosition;
+	private Collider2D initialBox;
+	private Stack<PlayerState> stateStack = new Stack<PlayerState> ( );
 	private bool isAttach;
+	private List<BoxController> allBoxes = new List<BoxController> ( );
 
 	[Header ( "Value" )]
+	[SerializeField] public float Move_cushioning;
 	public const float gridHalfSize = 0.25f;
 
 	[Header ( "LayerMask" )]
@@ -20,16 +21,31 @@ public class PlayerController : MonoBehaviour
 	public void Start ( )
 	{
 		currentPosition = RoundToGridCenter ( transform.position );
-		initialBox = Physics2D.OverlapPoint ( currentPosition , boxLayer ); 
+		initialBox = Physics2D.OverlapPoint ( currentPosition , boxLayer );
+
+		// 初始化所有箱子
+		BoxController [ ] boxes = FindObjectsOfType<BoxController> ( );
+		allBoxes = new List<BoxController> ( boxes );
+
+		Debug.Log ( $"Number of boxes found: {allBoxes.Count}" );
+		foreach ( BoxController box in allBoxes )
+		{
+			Debug.Log ( $"Box: {box.name}" );
+		}
 	}
 
 	public void Update ( )
 	{
 		HandleMovement ( );
 		HandleAttachment ( );
+
+		if ( Input.GetKeyDown ( KeyCode.Z ) )
+		{
+			StartRewind ( );
+		}
 	}
 
-	//MOVEMENT
+	// 移动处理
 	private void HandleMovement ( )
 	{
 		if ( isAttach )
@@ -45,13 +61,13 @@ public class PlayerController : MonoBehaviour
 		}
 		else
 		{
-			if ( Input.GetKeyDown ( KeyCode.W ) || Input.GetKeyDown ( KeyCode.UpArrow ) ) 
+			if ( Input.GetKeyDown ( KeyCode.W ) || Input.GetKeyDown ( KeyCode.UpArrow ) )
 				MoveToNearestBox ( Vector2.up );
-			else if ( Input.GetKeyDown ( KeyCode.A ) || Input.GetKeyDown ( KeyCode.LeftArrow ) ) 
+			else if ( Input.GetKeyDown ( KeyCode.A ) || Input.GetKeyDown ( KeyCode.LeftArrow ) )
 				MoveToNearestBox ( Vector2.left );
-			else if ( Input.GetKeyDown ( KeyCode.S ) || Input.GetKeyDown ( KeyCode.DownArrow ) ) 
+			else if ( Input.GetKeyDown ( KeyCode.S ) || Input.GetKeyDown ( KeyCode.DownArrow ) )
 				MoveToNearestBox ( Vector2.down );
-			else if ( Input.GetKeyDown ( KeyCode.D ) || Input.GetKeyDown ( KeyCode.RightArrow ) ) 
+			else if ( Input.GetKeyDown ( KeyCode.D ) || Input.GetKeyDown ( KeyCode.RightArrow ) )
 				MoveToNearestBox ( Vector2.right );
 		}
 	}
@@ -59,9 +75,12 @@ public class PlayerController : MonoBehaviour
 	private void MoveTogether ( Vector2 direction )
 	{
 		Vector2 targetPosition = RoundToGridCenter ( ( Vector2 ) transform.position + direction * gridHalfSize * 4 );
-		if ( CanMove ( direction, targetPosition ) )
+		if ( CanMove ( direction , targetPosition ) )
 		{
+			SaveState ( );
 			transform.position = targetPosition;
+
+			SaveAllBoxState ( );
 			initialBox.transform.position = targetPosition;
 
 			Debug.Log ( $"Moved together to {targetPosition}" );
@@ -72,26 +91,29 @@ public class PlayerController : MonoBehaviour
 		}
 	}
 
-	private bool CanMove ( Vector2 direction, Vector2 targetPosition )
+	private void SaveAllBoxState ( )
+	{
+		foreach ( BoxController boxes in allBoxes )
+		{
+			boxes.SaveState ( );
+			Debug.Log ( $"Save box {boxes} current position" );
+		}
+	}
+
+	private bool CanMove ( Vector2 direction , Vector2 targetPosition )
 	{
 		Vector2 rayStartPosition = RoundToGridCenter ( transform.position ) + direction * 0.5f;
 		float rayLength = gridHalfSize * 4f;
-		// obstacle?
+
 		RaycastHit2D hitObstacle = Physics2D.Raycast ( rayStartPosition , direction , rayLength , obstacleLayer );
-		//box?    
 		RaycastHit2D hitBox = Physics2D.Raycast ( rayStartPosition , direction , rayLength , boxLayer );
+
 		Debug.DrawRay ( rayStartPosition , direction * gridHalfSize * 4 , Color.blue , 0.5f );
 
-		if ( hitObstacle.collider != null || hitBox.collider != null )
-		{
-			return false;
-		}
-		return true;
+		return hitObstacle.collider == null && hitBox.collider == null;
 	}
 
-	//ATTACH
 	private void HandleAttachment ( )
-		//IT'S AN EXAMPLE USING TO CHAGE THE STAGE OF BOX=>CHANGEABLE
 	{
 		if ( Input.GetKeyDown ( KeyCode.Space ) )
 		{
@@ -110,103 +132,82 @@ public class PlayerController : MonoBehaviour
 
 	private void AttachToBox ( )
 	{
-		if ( initialBox != null )
-		{
-			//change stage
-
-			Debug.Log ( "Attached to box." );
-		}
+		Debug.Log ( "Attached to box." );
 	}
 
 	private void DetachFromBox ( )
 	{
-		if ( initialBox != null )
-		{
-			//change stage
-
-			Debug.Log ( "Detached from box." );
-		}
+		Debug.Log ( "Detached from box." );
 	}
 
-	//LOGIC OF MOVEMENT
 	private void MoveToNearestBox ( Vector2 direction )
 	{
-		float rayLength = 1f;
-		float maxRayLength = 20f; 
-		float rayIncrement = 1f; 
+		Vector2 rayStartPosition = RoundToGridCenter ( transform.position ) + direction * 0.5f;
+		RaycastHit2D hit = Physics2D.Raycast ( rayStartPosition , direction , 20f , boxLayer );
+		SaveAllBoxState ( );
 
-		Collider2D closestBox = null;
-		Vector2? obstaclePosition = null;
-
-		// start raycastJudgement beyond the initial box
-		Vector2 boxCenter = RoundToGridCenter ( transform.position ); // position of player current box
-		Vector2 rayStartPosition = RoundToGridCenter(transform.position) + direction * 0.5f;
-
-		while ( rayLength <= maxRayLength )
+		if ( hit.collider != null )
 		{
-			// raycast judgement by adding the edge length of box
-			Debug.Log ( rayLength );
-			Debug.DrawRay ( rayStartPosition , direction * rayLength , Color.red , 0.5f );
+			StartCoroutine ( Move_Wait ( direction , hit.collider ) );
+		}
+	}
 
-			RaycastHit2D hit = Physics2D.Raycast ( rayStartPosition , direction , rayLength , boxLayer );
-			RaycastHit2D obstacleHit = Physics2D.Raycast ( rayStartPosition , direction , rayLength , obstacleLayer );
+	private IEnumerator Move_Wait ( Vector3 direction , Collider2D closestBox )
+	{
+		SaveState ( );
 
-			if ( hit.collider != null )
+		while ( true )
+		{
+			transform.position += direction * 0.5f;
+
+			yield return new WaitForSeconds ( 0.01f );
+			float distance = ( closestBox.transform.position - transform.position ).magnitude;
+			if ( distance <= 0.01f )
 			{
-				closestBox = hit.collider;
-				Debug.Log ( closestBox.transform.position );
-				break; // find the nearest box along the way, if exists, break the loop
-			}
-
-			if ( obstacleHit.collider != null && !obstaclePosition.HasValue )
-			{
-				Debug.Log ( $"Hit obstacle at: {obstacleHit.point}" );
-				obstaclePosition = RoundToGridCenter ( obstacleHit.point - direction * 0.5f );
+				currentPosition = RoundToGridCenter ( closestBox.transform.position );
+				transform.position = currentPosition;
+				initialBox = closestBox;
+				Debug.Log ( $"Moved to box at {currentPosition}" );
 				break;
 			}
-
-			rayLength += rayIncrement;
-		}
-
-		if ( closestBox != null )
-		{
-			MoveToBox ( closestBox );
-		}
-		else if ( obstaclePosition.HasValue )
-		{
-			StartCoroutine ( MoveToObstacleAndBack ( obstaclePosition.Value ) );
 		}
 	}
 
-	private void MoveToBox ( Collider2D box )
+	private void SaveState ( )
 	{
-		currentPosition = RoundToGridCenter ( box.transform.position );
-		transform.position = currentPosition;
-		initialBox = box; // reset initialbox
-		Debug.Log ( $"Moved to box at {currentPosition}" );
+		stateStack.Push ( new PlayerState ( transform.position ) );
 	}
 
-	private IEnumerator MoveToObstacleAndBack ( Vector2 obstaclePosition )
+	private void StartRewind ( )
 	{
-		Vector2 originalPosition = transform.position;
+		if ( stateStack.Count > 0 )
+		{
+			PlayerState lastState = stateStack.Pop ( );
+			transform.position = lastState.position;
+		}
 
-		// move to the previous block of the obstacle
-		transform.position = obstaclePosition;
-		Debug.Log ( $"Moved to obstacle at {obstaclePosition}" );
-		yield return new WaitForSeconds ( 0.5f );
-
-		// back to the box
-		transform.position = originalPosition;
-		Debug.Log ( $"Returned to box at {originalPosition}" );
+		// 所有箱子回退
+		foreach ( BoxController box in allBoxes )
+		{
+			box.StartRewind ( );
+		}
 	}
 
 	private Vector2 RoundToGridCenter ( Vector2 position )
 	{
-		return new Vector2 
-		(
+		return new Vector2 (
 		    Mathf.Round ( position.x / 0.5f ) * 0.5f ,
 		    Mathf.Round ( position.y / 0.5f ) * 0.5f
 		);
 	}
 }
 
+[System.Serializable]
+public class PlayerState
+{
+	public Vector2 position;
+	public PlayerState ( Vector2 pos )
+	{
+		position = pos;
+	}
+}

@@ -1,43 +1,32 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class BoxController : MonoBehaviour
 {
-	[Header ( "LayerMask" )]
-	public LayerMask obstacleLayer; 
-	public LayerMask boxLayer; 
+	private Stack<BoxState> stateStack = new Stack<BoxState> ( );
 
-	public bool TryMove ( Vector2 direction )
+	public void SaveState ( )
 	{
-		// Find obstacle on the direction
-		Vector2 targetPosition = ( Vector2 ) transform.position + direction;
-
-		// Raycast judgemnet to find ovelap box
-		if ( IsValidMove ( targetPosition ) )
-		{
-			// move box to target
-			transform.position = targetPosition;
-			return true;
-		}
-		else
-		{
-			// if cannot miive
-			return false;
-		}
+		stateStack.Push ( new BoxState ( transform.position ) );
 	}
 
-	// judge whether can move
-	private bool IsValidMove ( Vector2 targetPosition )
+	public void StartRewind ( )
 	{
-		Collider2D obstacleHit = Physics2D.OverlapCircle ( targetPosition , 0.25f , obstacleLayer );
-		Collider2D boxHit = Physics2D.OverlapCircle ( targetPosition , 0.25f , boxLayer );
-
-		if ( obstacleHit == null && boxHit == null )
+		if ( stateStack.Count > 0 )
 		{
-			return true;
+			BoxState lastState = stateStack.Pop ( );
+			transform.position = lastState.position;
 		}
+	}
+}
 
-		return false; 
+public class BoxState
+{
+	public Vector2 position;
+
+	public BoxState ( Vector2 pos )
+	{
+		position = pos;
 	}
 }
