@@ -33,6 +33,10 @@ public class BoxController : MonoBehaviour
         }
 
     }
+	public void Destroy_state()
+	{
+		stateStack.Clear();
+    }
 }
 
 public class BoxState

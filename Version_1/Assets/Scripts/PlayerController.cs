@@ -19,7 +19,14 @@ public class PlayerController : MonoBehaviour
 	public LayerMask boxLayer;
 	public LayerMask obstacleLayer;
 
-	public void Start ( )
+	[Header("Ui")]
+	[SerializeField] public GameObject Ui_Text1;//储存Ui文字栏1
+	[SerializeField] public GameObject Ui_Text2;//储存Ui文字栏2
+	[SerializeField] public GameObject Canves;//储存Canves
+	[SerializeField] public float Destroy_Timer;//设置销毁时间
+
+
+    public void Start ( )
 	{
         initialState = new PlayerState(transform.position);//储存玩家初始位置
         currentPosition = RoundToGridCenter ( transform.position );
@@ -41,16 +48,31 @@ public class PlayerController : MonoBehaviour
 		HandleMovement ( );
 		HandleAttachment ( );
 
+		//按Z回到上一步
 		if ( Input.GetKeyDown ( KeyCode.Z ) )
 		{
-			StartRewind ( );
-		}
+			//设置判断，为空时不能提示
+			if (stateStack.Count > 0)
+			{
+				
+				GameObject text1_prefabs = Instantiate(Ui_Text1, Canves.transform);
+				Destroy(text1_prefabs, Destroy_Timer);//设置多少s后销毁
+			}
+            StartRewind ( );
+        }
+		//按R重新开始
 		if(Input.GetKeyDown(KeyCode.R))
 		{
-			RestoreFirstState();
+            GameObject text2_prefabs = Instantiate(Ui_Text2, Canves.transform);
+            Destroy(text2_prefabs, Destroy_Timer);//设置多少s后销毁
+
+            RestoreFirstState();
+            stateStack.Clear();//清空储存的所有栈
+
             foreach (BoxController boxes in allBoxes)
             {
 				boxes.RestoreFirstState();
+				boxes.Destroy_state();
             }
         }	
 	}
