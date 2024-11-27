@@ -42,28 +42,85 @@ public class BoxController : MonoBehaviour
 		stateStack.Clear ( );
 	}
 
-	public bool Push_Box(Vector2 direction)//推箱子传递
+	/// <summary>
+	/// 通过检测相邻最远箱子是否接触障碍物决定能否移动
+	/// </summary>
+	public bool Push_Box ( Vector2 direction, Vector2 playerPosition ) 
 	{
-		bool IsPush = true;
-		Vector2 rayStartPosition = RoundToGridCenter(transform.position) + direction * 0.5f;
+		bool isPush = true;
+		Vector2 rayStartPosition = RoundToGridCenter ( playerPosition ) + direction * 0.5f;
+		float rayLength = gridHalfSize * 4f + 0.5f;
+
+		RaycastHit2D hitBox = Physics2D.Raycast ( rayStartPosition , direction , 0.5f , boxLayer );
+		RaycastHit2D hitObstacle = Physics2D.Raycast ( rayStartPosition , direction , rayLength , obstacleLayer );
+
+		if ( hitBox )
+		{
+			List<BoxController> boxChain = new List<BoxController> ( );
+			BoxController currentBox = this;
+			boxChain.Add ( currentBox );
+
+			while ( currentBox != null )
+			{
+				BoxController nextBox = currentBox.FindNextBox ( direction );
+				if ( nextBox != null )
+				{
+					boxChain.Add ( nextBox );
+					currentBox = nextBox; 
+				}
+				else
+				{
+					break; 
+				}
+			}
+
+			// 检查最远箱子前方是否有障碍物
+			BoxController farthestBox = boxChain [ boxChain.Count - 1 ];
+			Debug.Log ( boxChain.Count );
+			if ( CanMove ( farthestBox , direction ) )
+			{
+				MoveBoxes ( direction , boxChain );
+			}
+			else
+			{
+				isPush = false; 
+			}
+		}
+		else if ( hitObstacle )
+		{
+			isPush = false;
+		}
+
+		return isPush;
+	}
+
+	private BoxController FindNextBox ( Vector2 direction )
+	{
+		Vector2 rayStartPosition = RoundToGridCenter ( transform.position ) + direction * 0.5f;
+		RaycastHit2D hitBox = Physics2D.Raycast ( rayStartPosition , direction , 0.5f , boxLayer );
+		if ( hitBox )
+		{
+			return hitBox.collider.GetComponent<BoxController> ( );
+		}
+		return null;
+	}
+
+	private bool CanMove ( BoxController farthestBox , Vector2 direction )
+	{
+		Vector2 rayStartPosition = RoundToGridCenter ( farthestBox.transform.position ) + direction * 0.5f;
 		float rayLength = gridHalfSize * 4f;
-		RaycastHit2D hitBox = Physics2D.Raycast(rayStartPosition, direction, 0.5f, boxLayer);
-		RaycastHit2D hitObstacle = Physics2D.Raycast(rayStartPosition, direction, rayLength, obstacleLayer);
-		if (hitBox)
+		Debug.DrawRay ( rayStartPosition , direction * rayLength , Color.red , 1f );
+		RaycastHit2D hitObstacle = Physics2D.Raycast ( rayStartPosition , direction , rayLength , obstacleLayer );
+		return hitObstacle.collider == null;
+	}
+
+	private void MoveBoxes ( Vector2 direction , List<BoxController> boxChain )
+	{
+		foreach ( BoxController box in boxChain )
 		{
-			IsPush = hitBox.collider.GetComponent<BoxController> ( ).Push_Box ( direction );
+			Vector2 newPosition = RoundToGridCenter ( ( Vector2 ) box.transform.position + direction * gridHalfSize * 4 );
+			box.transform.position = newPosition;
 		}
-		if (!hitObstacle)
-		{
-			Vector2 targetPosition = RoundToGridCenter((Vector2)transform.position + direction * gridHalfSize * 4);
-			transform.position = targetPosition;
-			IsPush = true;
-		}
-		else
-		{
-			IsPush = false;
-		}
-		return IsPush;
 	}
 
 	private Vector2 RoundToGridCenter(Vector2 position)

@@ -121,29 +121,28 @@ public class PlayerController : MonoBehaviour
 		foreach ( BoxController box in allBoxes )
 		{
 			box.SaveState ( );
-			Debug.Log ( $"Box {box.name} state saved to position {box.transform.position}" );
 		}
 	}
 
 	private bool CanMove ( Vector2 direction , Vector2 targetPosition )
 	{
-		bool IsPush = true;
+		bool isPush = true;
 		Vector2 rayStartPosition = RoundToGridCenter ( transform.position ) + direction * 0.5f;
 		float rayLength = gridHalfSize * 4f;
 
 		RaycastHit2D hitObstacle = Physics2D.Raycast ( rayStartPosition , direction , rayLength , obstacleLayer );
 		RaycastHit2D hitBox = Physics2D.Raycast ( rayStartPosition , direction , rayLength , boxLayer );
 
-		//这里可以看着改
-		if (hitBox)
+		if ( hitBox )
 		{
-			IsPush = hitBox.collider.GetComponent<BoxController> ( ).Push_Box ( direction );
+			isPush = hitBox.collider.GetComponent<BoxController> ( ).Push_Box ( direction, transform.position );
 		}
 
-		Debug.DrawRay ( rayStartPosition , direction * gridHalfSize * 4 , Color.blue , 0.5f );
+		//Debug.DrawRay ( rayStartPosition , direction * gridHalfSize * 4 , Color.green , 0.5f );
 
-		return hitObstacle.collider == null && IsPush;
+		return hitObstacle.collider == null && isPush;
 	}
+
 
 	private void HandleAttachment ( )
 	{
@@ -208,7 +207,6 @@ public class PlayerController : MonoBehaviour
 	private void SaveState ( )
 	{
 		stateStack.Push ( new PlayerState ( transform.position ) );
-		Debug.Log ( $"Player state saved. Stack size: {stateStack.Count}" );
 	}
 
 	private void StartRewind ( )
@@ -223,7 +221,6 @@ public class PlayerController : MonoBehaviour
 			foreach ( BoxController box in allBoxes )
 			{
 				box.StartRewind ( );
-				Debug.Log ( $"Box {box.name} rewound to position {box.transform.position}" );
 			}
 		}
 	}
