@@ -134,15 +134,22 @@ public class PlayerController : MonoBehaviour
 
 	private bool CanMove ( Vector2 direction , Vector2 targetPosition )
 	{
+		bool IsPush = true;
 		Vector2 rayStartPosition = RoundToGridCenter ( transform.position ) + direction * 0.5f;
 		float rayLength = gridHalfSize * 4f;
 
 		RaycastHit2D hitObstacle = Physics2D.Raycast ( rayStartPosition , direction , rayLength , obstacleLayer );
 		RaycastHit2D hitBox = Physics2D.Raycast ( rayStartPosition , direction , rayLength , boxLayer );
 
+		//这里可以看着改
+		if (hitBox)
+		{
+			IsPush = hitBox.collider.GetComponent<BoxController>().Push_Box(direction);
+		}
+
 		Debug.DrawRay ( rayStartPosition , direction * gridHalfSize * 4 , Color.blue , 0.5f );
 
-		return hitObstacle.collider == null && hitBox.collider == null;
+		return hitObstacle.collider == null&& IsPush;
 	}
 
 	private void HandleAttachment ( )

@@ -2696,6 +2696,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2fdb41a3202d7146b005ea602798fba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  boxLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &1042466650
 GameObject:
   m_ObjectHideFlags: 0
@@ -2985,6 +2991,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2fdb41a3202d7146b005ea602798fba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  boxLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!212 &1058761605
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3225,6 +3237,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2fdb41a3202d7146b005ea602798fba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  boxLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &1556631018
 GameObject:
   m_ObjectHideFlags: 0
@@ -3397,6 +3415,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2fdb41a3202d7146b005ea602798fba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  boxLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &1563112878
 GameObject:
   m_ObjectHideFlags: 0
@@ -6877,6 +6901,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2fdb41a3202d7146b005ea602798fba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  boxLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
