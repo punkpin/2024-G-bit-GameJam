@@ -58,18 +58,8 @@ public class PlayerController : MonoBehaviour
 		//按R重新开始
 		if(Input.GetKeyDown(KeyCode.R))
 		{
-			GameObject text2_prefabs = Instantiate(Ui_Text2, Canves.transform);
-			Destroy(text2_prefabs, Destroy_Timer);//设置多少s后销毁
-
-			RestoreFirstState();
-			stateStack.Clear();//清空储存的所有栈
-
-			foreach (BoxController boxes in allBoxes)
-			{
-				boxes.RestoreFirstState();
-				boxes.Destroy_state();
-			}
-		}	
+			Reset_Game();
+        }	
 	}
 
 	// 移动处理
@@ -250,6 +240,21 @@ public class PlayerController : MonoBehaviour
 			transform.position = initialState.position;
         }
 
+    }
+
+	public void Reset_Game()
+	{
+        GameObject text2_prefabs = Instantiate(Ui_Text2, Canves.transform);
+        Destroy(text2_prefabs, Destroy_Timer);//设置多少s后销毁
+
+        RestoreFirstState();
+        stateStack.Clear();//清空储存的所有栈
+
+        foreach (BoxController boxes in allBoxes)
+        {
+            boxes.RestoreFirstState();
+            boxes.Destroy_state();
+        }
     }
 }
 
