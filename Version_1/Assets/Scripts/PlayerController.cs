@@ -8,8 +8,8 @@ public class PlayerController : MonoBehaviour
 	private Vector2 currentPosition;
 	private Collider2D initialBox;
 	private Stack<PlayerState> stateStack = new Stack<PlayerState> ( );
-    private PlayerState initialState; // 保存初始状态
-    private bool isAttach;
+	private PlayerState initialState; // 保存初始状态
+	private bool isAttach;
 	private List<BoxController> allBoxes = new List<BoxController> ( );
 
 	[Header ( "Value" )]
@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
 	[Header ( "LayerMask" )]
 	public LayerMask boxLayer;
 	public LayerMask obstacleLayer;
+	public LayerMask holeLayer;
 
 	[Header("Ui")]
 	[SerializeField] public GameObject Ui_Text1;//储存Ui文字栏1
@@ -58,17 +59,7 @@ public class PlayerController : MonoBehaviour
 		//按R重新开始
 		if(Input.GetKeyDown(KeyCode.R))
 		{
-			GameObject text2_prefabs = Instantiate(Ui_Text2, Canves.transform);
-			Destroy(text2_prefabs, Destroy_Timer);//设置多少s后销毁
-
-			RestoreFirstState();
-			stateStack.Clear();//清空储存的所有栈
-
-			foreach (BoxController boxes in allBoxes)
-			{
-				boxes.RestoreFirstState();
-				boxes.Destroy_state();
-			}
+			Reset_Game();
 		}	
 	}
 
@@ -103,6 +94,10 @@ public class PlayerController : MonoBehaviour
 	{
 		SaveAllBoxState ( );
 		SaveState ( );
+		if ( Physics2D.OverlapPoint ( transform.position , holeLayer ) != null )
+		{
+			Reset_Game ( );
+		}
 
 		Vector2 targetPosition = RoundToGridCenter ( ( Vector2 ) transform.position + direction * gridHalfSize * 4 );
 		if ( CanMove ( direction , targetPosition ) )
@@ -143,6 +138,10 @@ public class PlayerController : MonoBehaviour
 		return hitObstacle.collider == null && isPush;
 	}
 
+	/*public void RemoveBox ( BoxController box )
+	{
+		allBoxes.Remove ( box );
+	}*/
 
 	private void HandleAttachment ( )
 	{
@@ -250,6 +249,21 @@ public class PlayerController : MonoBehaviour
 			transform.position = initialState.position;
         }
 
+    }
+
+	public void Reset_Game()
+	{
+        GameObject text2_prefabs = Instantiate(Ui_Text2, Canves.transform);
+        Destroy(text2_prefabs, Destroy_Timer);//设置多少s后销毁
+
+        RestoreFirstState();
+        stateStack.Clear();//清空储存的所有栈
+
+        foreach (BoxController boxes in allBoxes)
+        {
+            boxes.RestoreFirstState();
+            boxes.Destroy_state();
+        }
     }
 }
 

@@ -7,32 +7,37 @@ public class BoxController : MonoBehaviour
 	private Stack<BoxState> stateStack = new Stack<BoxState> ( );
 	private BoxState initialState; // 保存初始状态
 	public const float gridHalfSize = 0.25f;
+	private PlayerController playerController;
+	private bool isActive;
 
 	[Header("LayerMask")]
 	public LayerMask boxLayer;
 	public LayerMask obstacleLayer;
+	public LayerMask holeLayer;
 
 	private void Start()
 	{
-		initialState = new BoxState(transform.position);//储存箱子初始位置
+		initialState = new BoxState(transform.position, true);//储存箱子初始位置
+		playerController = FindObjectOfType<PlayerController> ( );
 	}
 	public void SaveState ( )
 	{
-		stateStack.Push ( new BoxState ( transform.position ) );
+		stateStack.Push ( new BoxState ( transform.position, gameObject.activeSelf ) );
 	}
 
 	public void StartRewind ( )
 	{
 		BoxState lastState = stateStack.Pop ( );
 		transform.position = lastState.position;
+		gameObject.SetActive ( lastState.isActive );
 	}
 
 	public void RestoreFirstState()
 	{
-		//回归最初状态
 		if (initialState != null)
 		{
 			transform.position = initialState.position;
+			isActive = true;
 		}
 
 	}
@@ -45,7 +50,7 @@ public class BoxController : MonoBehaviour
 	/// <summary>
 	/// 通过检测相邻最远箱子是否接触障碍物决定能否移动
 	/// </summary>
-	public bool Push_Box ( Vector2 direction, Vector2 playerPosition ) 
+	public bool Push_Box ( Vector2 direction , Vector2 playerPosition )
 	{
 		bool isPush = true;
 		Vector2 rayStartPosition = RoundToGridCenter ( playerPosition ) + direction * 0.5f;
@@ -58,6 +63,7 @@ public class BoxController : MonoBehaviour
 		{
 			List<BoxController> boxChain = new List<BoxController> ( );
 			BoxController currentBox = this;
+
 			boxChain.Add ( currentBox );
 
 			while ( currentBox != null )
@@ -66,24 +72,23 @@ public class BoxController : MonoBehaviour
 				if ( nextBox != null )
 				{
 					boxChain.Add ( nextBox );
-					currentBox = nextBox; 
+					currentBox = nextBox;
 				}
 				else
 				{
-					break; 
+					break;
 				}
 			}
-
-			// 检查最远箱子前方是否有障碍物
 			BoxController farthestBox = boxChain [ boxChain.Count - 1 ];
-			Debug.Log ( boxChain.Count );
+
+
 			if ( CanMove ( farthestBox , direction ) )
 			{
 				MoveBoxes ( direction , boxChain );
 			}
 			else
 			{
-				isPush = false; 
+				isPush = false;
 			}
 		}
 		else if ( hitObstacle )
@@ -92,6 +97,33 @@ public class BoxController : MonoBehaviour
 		}
 
 		return isPush;
+	}
+
+	private bool IsInHole ( Vector2 position )
+	{
+		Collider2D hitHole = Physics2D.OverlapPoint ( position , holeLayer );
+		Debug.Log ( "hitholejudgement" );
+		return hitHole != null;
+	}
+
+	private void MoveBoxes ( Vector2 direction , List<BoxController> boxChain )
+	{
+		foreach ( BoxController box in boxChain )
+		{
+			// 检查箱子是否会掉进坑
+			if ( IsInHole ( box.transform.position ) )
+			{
+				// 如果箱子掉入坑，隐藏箱子
+				Debug.Log ( $"destroy{box}" );
+				box.gameObject.SetActive ( false );
+			}
+			else
+			{
+				Debug.Log ( "NotInHole" );
+			}
+			Vector2 newPosition = RoundToGridCenter ( ( Vector2 ) box.transform.position + direction * gridHalfSize * 4 );
+			box.transform.position = newPosition;
+		}
 	}
 
 	private BoxController FindNextBox ( Vector2 direction )
@@ -114,15 +146,6 @@ public class BoxController : MonoBehaviour
 		return hitObstacle.collider == null;
 	}
 
-	private void MoveBoxes ( Vector2 direction , List<BoxController> boxChain )
-	{
-		foreach ( BoxController box in boxChain )
-		{
-			Vector2 newPosition = RoundToGridCenter ( ( Vector2 ) box.transform.position + direction * gridHalfSize * 4 );
-			box.transform.position = newPosition;
-		}
-	}
-
 	private Vector2 RoundToGridCenter(Vector2 position)
 	{
 		return new Vector2(
@@ -135,9 +158,11 @@ public class BoxController : MonoBehaviour
 public class BoxState
 {
 	public Vector2 position;
+	public bool isActive;
 
-	public BoxState ( Vector2 pos )
+	public BoxState ( Vector2 pos, bool active )
 	{
 		position = pos;
+		isActive = active;
 	}
 }
