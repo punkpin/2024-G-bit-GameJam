@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 6d22b00b4707f9041932c7ec25b5d7a0
+guid: f2bf450aa9e7426468b5603d4aef1a39
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - STXingkai
+  - Smiley Sans
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

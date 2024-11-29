@@ -59,7 +59,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.39920807, b: 1, a: 0.20784314}
+  m_Color: {r: 0, g: 0.39920807, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -143,15 +143,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u56DE\u6EAF\u4E00\u6B65"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 63fce7e61f1d4514186dfe9a6d2c8382, type: 2}
-  m_sharedMaterial: {fileID: 3555603023364749732, guid: 63fce7e61f1d4514186dfe9a6d2c8382, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: da5454995ede97c4ba49a0fa3c0617cb, type: 2}
+  m_sharedMaterial: {fileID: -301174467180335089, guid: da5454995ede97c4ba49a0fa3c0617cb, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4292171824
-  m_fontColor: {r: 0.1882353, g: 0.34388223, b: 0.8352941, a: 1}
+    rgba: 4294955459
+  m_fontColor: {r: 0.764151, g: 0.82132655, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

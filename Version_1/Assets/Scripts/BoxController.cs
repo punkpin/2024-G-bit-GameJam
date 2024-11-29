@@ -14,9 +14,17 @@ public class BoxController : MonoBehaviour
 	public LayerMask boxLayer;
 	public LayerMask obstacleLayer;
 	public LayerMask holeLayer;
+	[Header("Value")]
+	[SerializeField] public bool Can_Possessed;//是否允许附身
+	[Header("Level")]
+	[SerializeField] private GameObject Level;
+	[SerializeField] private GameObject Player;
 
-	private void Start()
+    private void Start()
 	{
+		Level = this.transform.parent.gameObject;
+		Player = Level.transform.GetChild(0).gameObject;//通过关卡物体找到玩家
+
 		initialState = new BoxState(transform.position, true);//储存箱子初始位置
 		playerController = FindObjectOfType<PlayerController> ( );
 	}
@@ -153,6 +161,24 @@ public class BoxController : MonoBehaviour
 		Mathf.Round(position.y / 0.5f) * 0.5f
 		);
 	}
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.tag == "Target")
+		{
+			Debug.Log("+1");
+			Player.GetComponent<PlayerController>().Local_Win_Number++;
+
+        }
+
+    }
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.tag == "Target")
+        {
+            Debug.Log("-1");
+            Player.GetComponent<PlayerController>().Local_Win_Number--;
+        }
+    }
 }
 
 public class BoxState

@@ -77,7 +77,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: -495423967, guid: e5ff83cedab150b4cb01b09bc89ec977, type: 3}
+  m_Sprite: {fileID: 21300000, guid: dd560373e34a36048bf9bd850bc8ead6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -106,6 +106,10 @@ MonoBehaviour:
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 64
+  holeLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  Can_Possessed: 1
 --- !u!50 &2685140968601569388
 Rigidbody2D:
   serializedVersion: 4

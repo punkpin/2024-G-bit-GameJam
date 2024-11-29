@@ -17,16 +17,4 @@ public class Win_box : MonoBehaviour
     {
         
     }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if(collision.tag == "Player")
-        {
-            Debug.Log("Win!");
-            if (collision.GetComponent<PlayerController>() != null) 
-            {
-                collision.GetComponent<PlayerController>().Reset_Game();
-            }
-        }
-    }
 }

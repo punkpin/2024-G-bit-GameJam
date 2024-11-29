@@ -7,16 +7,18 @@ public class PlayerController : MonoBehaviour
 {
 	private Vector2 currentPosition;
 	private Collider2D initialBox;
-	private Stack<PlayerState> stateStack = new Stack<PlayerState> ( );
+	private Stack<PlayerState> stateStack = new Stack<PlayerState> ( );//玩家位置栈
 	private PlayerState initialState; // 保存初始状态
-	private bool isAttach;
+	private bool isAttach = true;
 	private List<BoxController> allBoxes = new List<BoxController> ( );
 
-	[Header ( "Value" )]
+    [Header ( "Value" )]
 	[SerializeField] public float Move_cushioning;
 	public const float gridHalfSize = 0.25f;
+	[SerializeField] public int Win_Number;
+	[SerializeField] public int Local_Win_Number;
 
-	[Header ( "LayerMask" )]
+    [Header ( "LayerMask" )]
 	public LayerMask boxLayer;
 	public LayerMask obstacleLayer;
 	public LayerMask holeLayer;
@@ -24,13 +26,14 @@ public class PlayerController : MonoBehaviour
 	[Header("Ui")]
 	[SerializeField] public GameObject Ui_Text1;//储存Ui文字栏1
 	[SerializeField] public GameObject Ui_Text2;//储存Ui文字栏2
-	[SerializeField] public GameObject Canves;//储存Canves
+	[SerializeField] public GameObject Ui_Text3;//储存Ui文字栏2
+    [SerializeField] public GameObject Canves;//储存Canves
 	[SerializeField] public float Destroy_Timer;//设置销毁时间
 
 
     public void Start ( )
 	{
-		initialState = new PlayerState(transform.position);//储存玩家初始位置
+        initialState = new PlayerState(transform.position);//储存玩家初始位置
 		currentPosition = RoundToGridCenter ( transform.position );
 		initialBox = Physics2D.OverlapPoint ( currentPosition , boxLayer );
 
@@ -60,7 +63,20 @@ public class PlayerController : MonoBehaviour
 		if(Input.GetKeyDown(KeyCode.R))
 		{
 			Reset_Game();
-		}	
+            GameObject text2_prefabs = Instantiate(Ui_Text2, Canves.transform);
+            Destroy(text2_prefabs, Destroy_Timer);//设置多少s后销毁
+
+        }
+
+        //获胜条件
+        if (Win_Number == Local_Win_Number)
+		{
+			Debug.Log("Win!");
+			GameObject Prefabs = Instantiate(Ui_Text3, Canves.transform);
+			Destroy(Prefabs, Destroy_Timer);
+			Local_Win_Number = 0;
+            Reset_Game();
+        }
 	}
 
 	// 移动处理
@@ -97,6 +113,7 @@ public class PlayerController : MonoBehaviour
 		if ( Physics2D.OverlapPoint ( transform.position , holeLayer ) != null )
 		{
 			Reset_Game ( );
+			
 		}
 
 		Vector2 targetPosition = RoundToGridCenter ( ( Vector2 ) transform.position + direction * gridHalfSize * 4 );
@@ -115,7 +132,7 @@ public class PlayerController : MonoBehaviour
 	{
 		foreach ( BoxController box in allBoxes )
 		{
-			box.SaveState ( );
+			box.SaveState ( );//
 		}
 	}
 
@@ -175,8 +192,7 @@ public class PlayerController : MonoBehaviour
 		SaveAllBoxState ( );
 		Vector2 rayStartPosition = RoundToGridCenter ( transform.position ) + direction * 0.5f;
 		RaycastHit2D hit = Physics2D.Raycast ( rayStartPosition , direction , 20f , boxLayer );
-
-		if ( hit.collider != null )
+		if ( hit.collider != null && hit.collider.GetComponent<BoxController>().Can_Possessed)
 		{
 			StartCoroutine ( Move_Wait ( direction , hit.collider ) );
 		}
@@ -208,9 +224,11 @@ public class PlayerController : MonoBehaviour
 		stateStack.Push ( new PlayerState ( transform.position ) );
 	}
 
-	private void StartRewind ( )
+	private void StartRewind ( )//回溯时间
 	{
-		if ( stateStack.Count > 0 )
+		isAttach = false;//默认为脱离状态，修复bug
+
+        if ( stateStack.Count > 0 )
 		{
 			Debug.Log ( "rewindplayer" );
 			PlayerState lastState = stateStack.Pop ( );
@@ -251,11 +269,9 @@ public class PlayerController : MonoBehaviour
 
     }
 
-	public void Reset_Game()
+	public void Reset_Game()//重置游戏
 	{
-        GameObject text2_prefabs = Instantiate(Ui_Text2, Canves.transform);
-        Destroy(text2_prefabs, Destroy_Timer);//设置多少s后销毁
-
+        
         RestoreFirstState();
         stateStack.Clear();//清空储存的所有栈
 
