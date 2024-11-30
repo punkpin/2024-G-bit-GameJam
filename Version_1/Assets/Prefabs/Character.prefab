@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 239802055759789801}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.1581364, y: 2.6578825, z: 0.048989326}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.55, y: 0.55, z: 0.55}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -50,6 +50,7 @@ MonoBehaviour:
   Move_cushioning: 0
   Win_Number: 0
   Local_Win_Number: 0
+  Level_: {fileID: 0}
   boxLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -64,6 +65,7 @@ MonoBehaviour:
   Ui_Text3: {fileID: 2835755152934345841, guid: bb6a3b527aa7c41449ed120d09055481, type: 3}
   Canves: {fileID: 0}
   Destroy_Timer: 2
+  animator: {fileID: 0}
 --- !u!212 &4593919383312562751
 SpriteRenderer:
   m_ObjectHideFlags: 0

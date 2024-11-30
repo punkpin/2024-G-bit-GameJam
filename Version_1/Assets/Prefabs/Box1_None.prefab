@@ -109,7 +109,9 @@ MonoBehaviour:
   holeLayer:
     serializedVersion: 2
     m_Bits: 0
-  Can_Possessed: 1
+  Can_Possessed: 0
+  Level: {fileID: 0}
+  Player: {fileID: 0}
 --- !u!50 &2685140968601569388
 Rigidbody2D:
   serializedVersion: 4

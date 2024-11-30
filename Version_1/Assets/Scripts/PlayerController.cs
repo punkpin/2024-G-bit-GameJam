@@ -33,6 +33,7 @@ public class PlayerController : MonoBehaviour
 	[SerializeField] private Animator animator;
 
 	private bool IsWin = false;
+	private float Timer = 0;
 	public void Start ( )
 	{
 		initialState = new PlayerState ( transform.position );//储存玩家初始位置
@@ -76,17 +77,26 @@ public class PlayerController : MonoBehaviour
 		if ( Win_Number == Local_Win_Number )
 		{
 			Debug.Log ( "Win!" );
-			GameObject Prefabs = Instantiate ( Ui_Text3 , Canves.transform );
-			Destroy ( Prefabs , Destroy_Timer );
-			Local_Win_Number = 0;
-			Reset_Game ( );
-			IsWin = true;
+			if(Timer == 0)
+			{
+                GameObject Prefabs = Instantiate(Ui_Text3, Canves.transform);
+                Destroy(Prefabs, Destroy_Timer-0.5f);
+                IsWin = true;
+            }
+			Timer += Time.deltaTime;
+			if (Timer >= 1.5f)
+			{
+				Timer = 0;
+				Reset_Game();
+				Exit();
+            }
 
-		}
+        }
 
 		if ( Input.GetKeyDown ( KeyCode.Escape ) )
 		{
-			Exit ( );
+            Reset_Game();
+            Exit ( );
 		}
 	}
 
@@ -306,18 +316,17 @@ public class PlayerController : MonoBehaviour
 
 		RestoreFirstState ( );
 		stateStack.Clear ( );//清空储存的所有栈
-
-		foreach ( BoxController boxes in allBoxes )
+        foreach ( BoxController boxes in allBoxes )
 		{
 			boxes.RestoreFirstState ( );
 			boxes.Destroy_state ( );
 		}
-	}
+    }
 
 	public void Exit ( )
 	{
 		Reset_Game ( );
-		Level_.transform.parent.gameObject.SetActive ( true );
+		Level_.transform.parent.gameObject.SetActive (true);
 		Level_.transform.parent.GetChild ( 0 ).gameObject.transform.localPosition = Level_.transform.localPosition + new Vector3 ( 0 , 1 , 0 );
 
 		Level_.GetComponent<Level_instance> ( ).IsWin = IsWin;

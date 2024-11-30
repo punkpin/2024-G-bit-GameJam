@@ -12,6 +12,7 @@ public class Level_instance : MonoBehaviour
 	[SerializeField] private Level_instance Next_level_Instance;
 	[SerializeField] private Level_instance Next_level_Instance2;
 	[SerializeField] public bool IsWin;
+	[SerializeField] public bool IsExit;
 	// Start is called before the first frame update
 	void Start ( )
 	{
@@ -48,18 +49,31 @@ public class Level_instance : MonoBehaviour
 			{
 				Next_level_Instance2.Islocked = false;
 			}
+
+			if (IsExit == false)
+			{
+                IsExit = true;
+                Next_level_Instance.Enter_Level();
+            }
+
 			IsWin = false;
 		}
+		
+		
 	}
 
 	public void OnTriggerEnter2D ( Collider2D collision )
 	{
 		if ( collision.tag == "Player" )
 		{
-			level.SetActive ( true );
-			level.transform.GetChild ( 0 ).GetComponent<PlayerController> ( ).Level_ = this.gameObject;
-			this.transform.parent.gameObject.SetActive ( false );
-		}
+			Enter_Level();
+        }
 	}
+	public void Enter_Level()
+	{
+        level.SetActive(true);
+        level.transform.GetChild(0).GetComponent<PlayerController>().Level_ = this.gameObject;
+        this.transform.parent.gameObject.SetActive(false);
+    }
 
 }
