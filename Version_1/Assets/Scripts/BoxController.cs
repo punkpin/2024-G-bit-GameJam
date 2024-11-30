@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class BoxController : MonoBehaviour
 {
@@ -76,6 +77,16 @@ public class BoxController : MonoBehaviour
 
 			while ( currentBox != null )
 			{
+				if ( IsInHole ( currentBox.transform.position ) )
+				{
+					// 如果箱子掉入坑，隐藏箱子
+					Debug.Log ( $"00destroy{currentBox}" );
+					currentBox.gameObject.SetActive ( false );
+				}
+				else
+				{
+					Debug.Log ( "NotInHole" );
+				}
 				BoxController nextBox = currentBox.FindNextBox ( direction );
 				if ( nextBox != null )
 				{
@@ -133,6 +144,7 @@ public class BoxController : MonoBehaviour
 			box.transform.position = newPosition;
 		}
 	}
+
 
 	private BoxController FindNextBox ( Vector2 direction )
 	{

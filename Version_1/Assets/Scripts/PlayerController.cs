@@ -36,6 +36,7 @@ public class PlayerController : MonoBehaviour
 	public void Start ( )
 	{
 		initialState = new PlayerState ( transform.position );//储存玩家初始位置
+		Debug.Log ( initialState );
 		currentPosition = RoundToGridCenter ( transform.position );
 		initialBox = Physics2D.OverlapPoint ( currentPosition , boxLayer );
 
@@ -50,6 +51,7 @@ public class PlayerController : MonoBehaviour
 	{
 		HandleMovement ( );
 		HandleAttachment ( );
+		DeathJudgement ( );
 
 		//按Z回到上一步
 		if ( Input.GetKeyDown ( KeyCode.Z ) )
@@ -127,7 +129,7 @@ public class PlayerController : MonoBehaviour
 		if ( Physics2D.OverlapPoint ( transform.position , holeLayer ) != null )
 		{
 			Reset_Game ( );
-
+			Debug.Log ( "resetgame" );
 		}
 
 		Vector2 targetPosition = RoundToGridCenter ( ( Vector2 ) transform.position + direction * gridHalfSize * 4 );
@@ -174,6 +176,21 @@ public class PlayerController : MonoBehaviour
 		allBoxes.Remove ( box );
 	}*/
 
+	private void DeathJudgement ( )
+	{
+		if ( isAttach && Physics2D.OverlapPoint ( transform.position , holeLayer ) != null )
+		{
+			StartCoroutine ( WaitForReset ( ) );
+		}
+	}
+
+	private IEnumerator WaitForReset ( )
+	{
+		yield return new WaitForSeconds ( 1f );
+		Reset_Game ( );
+		Debug.Log ( "resetgame" );
+	}
+
 	private void HandleAttachment ( )
 	{
 		if ( Input.GetKeyDown ( KeyCode.Space ) )
@@ -204,8 +221,11 @@ public class PlayerController : MonoBehaviour
 	private void MoveToNearestBox ( Vector2 direction )
 	{
 		SaveAllBoxState ( );
+		SaveState ( );
 		Vector2 rayStartPosition = RoundToGridCenter ( transform.position ) + direction * 0.5f;
+		Debug.DrawRay ( rayStartPosition , direction , Color.blue );
 		RaycastHit2D hit = Physics2D.Raycast ( rayStartPosition , direction , 20f , boxLayer );
+		Debug.Log ( hit );
 		if ( hit.collider != null && hit.collider.GetComponent<BoxController> ( ).Can_Possessed )
 		{
 			StartCoroutine ( Move_Wait ( direction , hit.collider ) );
@@ -215,7 +235,7 @@ public class PlayerController : MonoBehaviour
 
 	private IEnumerator Move_Wait ( Vector3 direction , Collider2D closestBox )
 	{
-		SaveState ( );
+		//SaveState ( );
 
 		while ( true )
 		{
@@ -296,6 +316,7 @@ public class PlayerController : MonoBehaviour
 	{
 		if ( initialState != null )
 		{
+			Debug.Log("resetposition");
 			transform.position = initialState.position;
 		}
 
@@ -303,7 +324,6 @@ public class PlayerController : MonoBehaviour
 
 	public void Reset_Game ( )//重置游戏
 	{
-
 		RestoreFirstState ( );
 		stateStack.Clear ( );//清空储存的所有栈
 
