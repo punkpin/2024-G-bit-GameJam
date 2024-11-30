@@ -316,6 +316,7 @@ public class PlayerController : MonoBehaviour
 	{
 		if ( initialState != null )
 		{
+			isAttach = true;//似乎能解决一些bug
 			Debug.Log("resetposition");
 			transform.position = initialState.position;
 		}

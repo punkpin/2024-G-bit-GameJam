@@ -29,6 +29,21 @@ public class BoxController : MonoBehaviour
 		initialState = new BoxState ( transform.position , true );//储存箱子初始位置
 		playerController = FindObjectOfType<PlayerController> ( );
 	}
+
+	private void Update ( )
+	{
+		if ( IsInHole ( transform.position ) )
+		{
+			// 如果箱子掉入坑，隐藏箱子
+			Debug.Log ( $"00destroy" );
+			this.gameObject.SetActive ( false );
+		}
+		else
+		{
+			Debug.Log ( "NotInHole" );
+		}
+	}
+
 	public void SaveState ( )
 	{
 		stateStack.Push ( new BoxState ( transform.position , gameObject.activeSelf ) );
@@ -46,7 +61,7 @@ public class BoxController : MonoBehaviour
 		if ( initialState != null )
 		{
 			transform.position = initialState.position;
-			isActive = true;
+			this.gameObject.SetActive ( true );
 		}
 
 	}
@@ -77,16 +92,6 @@ public class BoxController : MonoBehaviour
 
 			while ( currentBox != null )
 			{
-				if ( IsInHole ( currentBox.transform.position ) )
-				{
-					// 如果箱子掉入坑，隐藏箱子
-					Debug.Log ( $"00destroy{currentBox}" );
-					currentBox.gameObject.SetActive ( false );
-				}
-				else
-				{
-					Debug.Log ( "NotInHole" );
-				}
 				BoxController nextBox = currentBox.FindNextBox ( direction );
 				if ( nextBox != null )
 				{
@@ -130,7 +135,7 @@ public class BoxController : MonoBehaviour
 		foreach ( BoxController box in boxChain )
 		{
 			// 检查箱子是否会掉进坑
-			if ( IsInHole ( box.transform.position ) )
+			/*if ( IsInHole ( box.transform.position ) )
 			{
 				// 如果箱子掉入坑，隐藏箱子
 				Debug.Log ( $"destroy{box}" );
@@ -139,7 +144,7 @@ public class BoxController : MonoBehaviour
 			else
 			{
 				Debug.Log ( "NotInHole" );
-			}
+			}*/
 			Vector2 newPosition = RoundToGridCenter ( ( Vector2 ) box.transform.position + direction * gridHalfSize * 4 );
 			box.transform.position = newPosition;
 		}
