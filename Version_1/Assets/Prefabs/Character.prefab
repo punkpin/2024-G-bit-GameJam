@@ -48,14 +48,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Move_cushioning: 0
+  Win_Number: 0
+  Local_Win_Number: 0
   boxLayer:
     serializedVersion: 2
     m_Bits: 8
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 64
+  holeLayer:
+    serializedVersion: 2
+    m_Bits: 0
   Ui_Text1: {fileID: 3104810481543386264, guid: bca18098a824c5f4192d22d088401592, type: 3}
   Ui_Text2: {fileID: 2835755152934345841, guid: c97c5af134f48724793fa37fa2595d77, type: 3}
+  Ui_Text3: {fileID: 2835755152934345841, guid: bb6a3b527aa7c41449ed120d09055481, type: 3}
   Canves: {fileID: 0}
   Destroy_Timer: 2
 --- !u!212 &4593919383312562751
@@ -99,7 +105,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 3
-  m_Sprite: {fileID: 21300000, guid: f3261778cb66d3443945c5461f632817, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 4663ac6cc6bd22a448e57a275df1ab83, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

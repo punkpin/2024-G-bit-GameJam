@@ -10,19 +10,27 @@ public class BoxController : MonoBehaviour
 	private PlayerController playerController;
 	private bool isActive;
 
-	[Header("LayerMask")]
+	[Header ( "LayerMask" )]
 	public LayerMask boxLayer;
 	public LayerMask obstacleLayer;
 	public LayerMask holeLayer;
+	[Header ( "Value" )]
+	[SerializeField] public bool Can_Possessed;//是否允许附身
+	[Header ( "Level" )]
+	[SerializeField] private GameObject Level;
+	[SerializeField] private GameObject Player;
 
-	private void Start()
+	private void Start ( )
 	{
-		initialState = new BoxState(transform.position, true);//储存箱子初始位置
+		Level = this.transform.parent.gameObject;
+		Player = Level.transform.GetChild ( 0 ).gameObject;//通过关卡物体找到玩家
+
+		initialState = new BoxState ( transform.position , true );//储存箱子初始位置
 		playerController = FindObjectOfType<PlayerController> ( );
 	}
 	public void SaveState ( )
 	{
-		stateStack.Push ( new BoxState ( transform.position, gameObject.activeSelf ) );
+		stateStack.Push ( new BoxState ( transform.position , gameObject.activeSelf ) );
 	}
 
 	public void StartRewind ( )
@@ -32,16 +40,16 @@ public class BoxController : MonoBehaviour
 		gameObject.SetActive ( lastState.isActive );
 	}
 
-	public void RestoreFirstState()
+	public void RestoreFirstState ( )
 	{
-		if (initialState != null)
+		if ( initialState != null )
 		{
 			transform.position = initialState.position;
 			isActive = true;
 		}
 
 	}
-	public void Destroy_state()
+	public void Destroy_state ( )
 	{
 		//Clear all states
 		stateStack.Clear ( );
@@ -146,12 +154,30 @@ public class BoxController : MonoBehaviour
 		return hitObstacle.collider == null;
 	}
 
-	private Vector2 RoundToGridCenter(Vector2 position)
+	private Vector2 RoundToGridCenter ( Vector2 position )
 	{
-		return new Vector2(
-		Mathf.Round(position.x / 0.5f) * 0.5f,
-		Mathf.Round(position.y / 0.5f) * 0.5f
+		return new Vector2 (
+		Mathf.Round ( position.x / 0.5f ) * 0.5f ,
+		Mathf.Round ( position.y / 0.5f ) * 0.5f
 		);
+	}
+	private void OnTriggerEnter2D ( Collider2D collision )
+	{
+		if ( collision.tag == "Target" )
+		{
+			Debug.Log ( "+1" );
+			Player.GetComponent<PlayerController> ( ).Local_Win_Number++;
+
+		}
+
+	}
+	private void OnTriggerExit2D ( Collider2D collision )
+	{
+		if ( collision.tag == "Target" )
+		{
+			Debug.Log ( "-1" );
+			Player.GetComponent<PlayerController> ( ).Local_Win_Number--;
+		}
 	}
 }
 
@@ -160,7 +186,7 @@ public class BoxState
 	public Vector2 position;
 	public bool isActive;
 
-	public BoxState ( Vector2 pos, bool active )
+	public BoxState ( Vector2 pos , bool active )
 	{
 		position = pos;
 		isActive = active;
